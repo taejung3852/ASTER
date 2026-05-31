@@ -1,10 +1,8 @@
-import json
-
 from langchain_core.messages import SystemMessage, HumanMessage
 from langsmith import traceable
 
 from src.state import ABSAState
-from src.utils import llm_json as _llm
+from src.utils import llm_json as _llm, parse_json_response
 
 _SYSTEM = """\
 # Role
@@ -68,7 +66,7 @@ def critic(state: ABSAState) -> dict:
 """
 
     response = _llm.invoke([SystemMessage(_SYSTEM), HumanMessage(human)])
-    parsed = json.loads(response.content)
+    parsed = parse_json_response(response)
 
     return {
         "verdict": parsed.get("verdict", "REVISE"),

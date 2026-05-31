@@ -16,7 +16,7 @@ REVISE 시 구체적인 수정 지시를 critic_feedback에 기록한다.
 (AutoDoc-MAS Reflection 루프 패턴 동일하게 적용)
 
 **Instructions:**
-- 입력: reviews, aste_results, confidence, revisions, max_revisions
+- 입력: reviews, aste_results, confidence, revisions
 - 검증 항목:
   1. 모든 추출 결과에 evidence가 있는가
   2. opinion이 리뷰 원문에 실제로 존재하는가 (hallucination 검사)
@@ -24,12 +24,12 @@ REVISE 시 구체적인 수정 지시를 critic_feedback에 기록한다.
   4. 중요한 aspect가 누락되지 않았는가
 - PASS 조건: confidence >= 0.7 AND 위 검증 항목 문제 없음
 - REVISE 조건: confidence < 0.7 OR 검증 항목 실패
-- revisions >= max_revisions이면 verdict와 무관하게 graph.py의 라우터가 강제 PASS 처리
+- revisions >= max_revisions이면 verdict와 무관하게 graph.py의 `_route_after_critic`이 triage로 분기 (critic은 판정만 수행)
 - 출력 필드: verdict, critic_feedback, revisions(+1)
 
 **Steps:**
 1. confidence 임계값 확인 (0.7)
-2. aste_results를 `_format_triples()` 로 포매팅 후 LLM 프롬프트 호출 → [P-04 참조](../design/prompt_spec.md#p-04-critic-프롬프트)
+2. aste_results를 `_format_aste_results()` 로 포매팅 후 LLM 프롬프트 호출 → [P-04 참조](../design/prompt_spec.md#p-04-critic-프롬프트)
 3. 판정 결정: PASS / REVISE
 4. REVISE 시 구체적 오류 목록 + 수정 방향을 critic_feedback에 작성
 5. revisions += 1

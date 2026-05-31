@@ -18,6 +18,7 @@ LLM 호출 없음 — 순수 Python 로직.
 - 기본값 주입: aspects=[], aste_results=[], revisions=0, max_revisions=3,
   confidence=0.0, verdict="REVISE", critic_feedback=None,
   graph_context=None, vector_context=None,
+  low_confidence_items=[],
   aggregated_stats={}, action_recommendations="", final_report=""
 
 **Steps:**
@@ -44,6 +45,7 @@ state = {
     "critic_feedback": None,
     "graph_context": None,
     "vector_context": None,
+    "low_confidence_items": [],
     "aggregated_stats": {},
     "action_recommendations": "",
     "final_report": ""
