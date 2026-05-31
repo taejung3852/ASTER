@@ -26,8 +26,8 @@
 **프롬프트:**
 ```
 # Role
-당신은 {domain} 도메인의 고객 리뷰 분석 전문가입니다.
-주어진 리뷰에서 도메인 Taxonomy 기준으로 aspect를 추출합니다.
+당신은 고객 리뷰 분석 전문가입니다.
+주어진 도메인의 Taxonomy 기준으로 리뷰에서 aspect를 추출합니다.
 
 # Instructions
 - 분석할 리뷰에서 언급된 aspect를 Taxonomy 기준으로 추출하세요
@@ -106,10 +106,12 @@
 
 # Expectations
 출력 형식 (JSON):
-{"aste_results": [{"aspect": "str", "opinion": "str", "sentiment": "POS|NEG|NEU", "confidence": 0.0, "evidence": "원문 인용"}]}
+{"aste_results": [{"review_index": 0, "aspect": "str", "opinion": "str", "sentiment": "POS|NEG|NEU", "confidence": 0.0, "evidence": "원문 인용"}]}
+
+- review_index: 해당 triple이 추출된 리뷰의 0-based 인덱스
 
 예시:
-{"aste_results": [{"aspect": "요금", "opinion": "너무 비싸", "sentiment": "NEG", "confidence": 0.87, "evidence": "원문: '요금이 너무 비싸서 해지를 고려하고 있어요'"}]}
+{"aste_results": [{"review_index": 0, "aspect": "요금", "opinion": "너무 비싸", "sentiment": "NEG", "confidence": 0.87, "evidence": "원문: '요금이 너무 비싸서 해지를 고려하고 있어요'"}]}
 
 # Narrowing
 - 리뷰에 없는 내용을 opinion으로 생성하지 마세요 (hallucination 금지)
@@ -159,10 +161,10 @@
 | 변수 | 타입 | 비고 |
 |---|---|---|
 | `{reviews}` | str | |
-| `{triples_formatted}` | str | `_format_triples()` 함수 출력 |
+| `{aste_results_formatted}` | str | `_format_aste_results()` 함수 출력 |
 | `{confidence}` | float | `.2f` 포맷 |
 
-**triples_formatted 형식:**
+**aste_results_formatted 형식:**
 ```
 1. aspect=요금, opinion=너무 비싸, sentiment=NEG, confidence=0.87
    evidence: 원문 '요금이 너무 비싸서 해지 고려 중'
@@ -204,7 +206,7 @@ REVISE 예시:
 {reviews}
 
 ## 추출된 ASTE 결과
-{triples_formatted}
+{aste_results_formatted}
 
 ## 전체 신뢰도
 {confidence}
@@ -233,7 +235,7 @@ REVISE 예시:
 **프롬프트:**
 ```
 # Role
-당신은 {domain} 도메인의 고객 경험 전략 컨설턴트입니다.
+당신은 고객 경험 전략 컨설턴트입니다.
 감성 분석 집계 데이터를 바탕으로 운영팀이 즉시 실행 가능한 액션 권고문을 작성합니다.
 
 # Instructions

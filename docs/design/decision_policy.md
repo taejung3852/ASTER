@@ -20,12 +20,12 @@ OR sentiment-opinion 불일치
 OR 주요 aspect 누락
 ```
 
-### 강제 PASS (Critic 판정 무시)
+### 강제 전진 (Critic 판정 무시)
 ```
-revisions >= max_revisions
+REVISE + revisions >= max_revisions → hitl_triage 노드 경유
 ```
 이유: 무한 루프 방지. 품질보다 시스템 안정성 우선.
-단, 해당 결과는 `low_confidence` 플래그로 마킹 (추후 추가 예정).
+해당 결과는 `low_confidence_items`에 저장되어 사람이 사후 검토할 수 있도록 분리 보관.
 
 ---
 
@@ -54,14 +54,16 @@ revisions >= max_revisions
 ## 4. 라우팅 결정 함수
 
 ```python
-def route_after_critic(state: ABSAState) -> Literal["revise", "pass"]:
-    if state["verdict"] == "REVISE" and state["revisions"] < state["max_revisions"]:
+def _route_after_critic(state: ABSAState) -> Literal["revise", "pass", "triage"]:
+    if state["verdict"] == "PASS":
+        return "pass"
+    if state["revisions"] < state["max_revisions"]:
         return "revise"
-    return "pass"
+    return "triage"  # REVISE + max_revisions 소진 → HITL 대기열
 ```
 
-**중요:** `revisions >= max_revisions`이면 verdict가 "REVISE"여도 강제로 "pass" 반환.
-즉, Critic의 판정보다 revisions 카운터가 우선권을 가진다.
+**중요:** `revisions >= max_revisions`이면 verdict가 "REVISE"여도 `triage` 반환.
+Critic의 판정보다 revisions 카운터가 우선권을 가지며, 해당 결과는 `low_confidence_items`로 분리된다.
 
 ---
 
@@ -108,12 +110,12 @@ if state.get("domain") not in DOMAIN_TAXONOMY:
 
 ## 8. 향후 추가 예정 정책
 
-### low_confidence 플래그 (미구현)
-max_revisions 초과 강제 PASS 된 항목에 플래그를 달아 운영자가 사후 검토할 수 있도록 함.
+### low_confidence 대기열 (구현 완료)
+max_revisions 소진 후 REVISE 판정된 항목을 `hitl_triage` 노드에서 분리 보관.
 
 ```python
-# 추가 예정 State 필드
-"low_confidence_items": List[int]  # aste_results 인덱스 목록
+# ABSAState 필드 (구현됨)
+"low_confidence_items": List[ASTEResult]  # 사람 검토 대기 결과 목록
 ```
 
 ### 도메인 자동 감지 (미구현)

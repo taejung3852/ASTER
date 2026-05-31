@@ -11,10 +11,16 @@ from src.agents.critic import critic
 from src.agents.synthesizer import insight_synthesizer
 
 
-def _route_after_critic(state: ABSAState) -> Literal["revise", "pass"]:
-    if state["verdict"] == "REVISE" and state["revisions"] < state["max_revisions"]:
+def _route_after_critic(state: ABSAState) -> Literal["revise", "pass", "triage"]:
+    if state["verdict"] == "PASS":
+        return "pass"
+    if state["revisions"] < state["max_revisions"]:
         return "revise"
-    return "pass"
+    return "triage"
+
+
+def _hitl_triage(state: ABSAState) -> dict:
+    return {"low_confidence_items": state["aste_results"]}
 
 
 def build_graph() -> StateGraph:
@@ -24,6 +30,7 @@ def build_graph() -> StateGraph:
     graph.add_node("aspect_extractor", aspect_extractor)
     graph.add_node("sentiment_classifier", sentiment_classifier)
     graph.add_node("critic", critic)
+    graph.add_node("hitl_triage", _hitl_triage)
     graph.add_node("insight_synthesizer", insight_synthesizer)
 
     graph.set_entry_point("supervisor")
@@ -36,8 +43,10 @@ def build_graph() -> StateGraph:
         {
             "revise": "sentiment_classifier",
             "pass": "insight_synthesizer",
+            "triage": "hitl_triage",
         },
     )
+    graph.add_edge("hitl_triage", "insight_synthesizer")
     graph.add_edge("insight_synthesizer", END)
 
     return graph.compile()

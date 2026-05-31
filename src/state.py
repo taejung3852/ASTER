@@ -18,6 +18,7 @@ class Aspect(TypedDict):
 
 
 class ASTEResult(TypedDict):
+    review_index: int
     aspect: str
     opinion: str
     sentiment: Literal["POS", "NEG", "NEU"]
@@ -44,6 +45,9 @@ class ABSAState(TypedDict):
     revisions: int
     max_revisions: int
     critic_feedback: Optional[str]
+
+    # HITL 대기열
+    low_confidence_items: List[ASTEResult]
 
     # Synthesizer 출력
     aggregated_stats: dict

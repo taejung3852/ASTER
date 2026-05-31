@@ -27,12 +27,21 @@ if __name__ == "__main__":
     result = run_pipeline(sample_reviews, domain="telecom")
 
     print("=== ASTE 결과 ===")
+    grouped: dict[int, list] = {}
     for triple in result["aste_results"]:
-        print(
-            f"  [{triple['sentiment']}] {triple['aspect']} / {triple['opinion']}"
-            f" (신뢰도: {triple['confidence']:.2f})"
-        )
-        print(f"    근거: {triple['evidence']}")
+        idx = triple.get("review_index", 0)
+        grouped.setdefault(idx, []).append(triple)
+
+    for idx in sorted(grouped):
+        review_text = sample_reviews[idx] if idx < len(sample_reviews) else f"리뷰 {idx}"
+        print(f"\n[리뷰 {idx + 1}] {review_text}")
+        print("-" * 60)
+        for triple in grouped[idx]:
+            print(
+                f"  [{triple['sentiment']}] {triple['aspect']} / {triple['opinion']}"
+                f" (신뢰도: {triple['confidence']:.2f})"
+            )
+            print(f"    근거: {triple['evidence']}")
 
     print("\n=== 액션 권고 ===")
     print(result["action_recommendations"])

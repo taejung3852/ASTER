@@ -86,11 +86,20 @@ ASTER/
 │       └── vector_rag.py        # Qdrant 유사 리뷰 검색
 │
 └── docs/
-    ├── state_definition.md      # ABSAState 스키마 명세
-    ├── workflow_spec.md         # 노드-엣지 구조 명세
-    ├── prompt_spec.md           # 프롬프트 템플릿 (P-01~P-05)
-    ├── decision_policy.md       # PASS/REVISE 기준 + 설계 결정 근거
-    └── agent_spec_*.md          # 에이전트별 역할 명세
+    ├── design/
+    │   ├── state_definition.md  # ABSAState 스키마 명세
+    │   ├── workflow_spec.md     # 노드-엣지 구조 명세
+    │   ├── prompt_spec.md       # 프롬프트 템플릿 (P-01~P-05)
+    │   └── decision_policy.md   # PASS/REVISE 기준 + 설계 결정 근거
+    ├── agents/
+    │   ├── supervisor.md
+    │   ├── extractor.md
+    │   ├── classifier.md
+    │   ├── critic.md
+    │   └── synthesizer.md
+    └── conventions/
+        ├── branch.md            # 브랜치 전략
+        └── commit.md            # 커밋 메시지 컨벤션
 ```
 
 ---

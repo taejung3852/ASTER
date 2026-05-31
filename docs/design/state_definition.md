@@ -10,7 +10,7 @@
 ## 확정 스키마
 
 ```python
-from typing import TypedDict, Literal, List, Optional, Annotated
+from typing import TypedDict, Literal, List, Optional
 import operator
 
 class Aspect(TypedDict):
@@ -18,6 +18,7 @@ class Aspect(TypedDict):
     category: str      # 정규화된 카테고리 (아래 도메인별 taxonomy 참조)
 
 class ASTEResult(TypedDict):
+    review_index: int  # 추출 원본 리뷰의 0-based 인덱스
     aspect: str        # aspect 원문
     opinion: str       # opinion 원문
     sentiment: Literal["POS", "NEG", "NEU"]
@@ -44,9 +45,12 @@ class ABSAState(TypedDict):
     max_revisions: int                     # 기본값 3 (graph 생성 시 주입)
     critic_feedback: Optional[str]         # Classifier에 전달할 피드백
 
+    # ── HITL 대기열 ────────────────────────────────────────
+    low_confidence_items: List[ASTEResult] # max_revisions 초과 시 사람 검토용
+
     # ── Synthesizer 출력 ───────────────────────────────────
     aggregated_stats: dict                 # aspect별 감성 집계 통계
-    action_recommendations: str           # 운영 액션 권고문 (자연어)
+    action_recommendations: str            # 운영 액션 권고문 (자연어)
     final_report: str                      # 최종 구조화 리포트 (JSON 직렬화)
 ```
 
@@ -75,8 +79,11 @@ sentiment_classifier
   ↓ aste_results, confidence 채움
 critic
   ↓ verdict 결정, critic_feedback 기록, revisions++ 
-  ├── REVISE → sentiment_classifier (critic_feedback 읽어 재시도)
+  ├── REVISE + revisions < max_revisions → sentiment_classifier (재시도)
+  ├── REVISE + revisions >= max_revisions → hitl_triage (HITL 대기열 저장)
   └── PASS  → insight_synthesizer
+hitl_triage
+  ↓ low_confidence_items 저장
 insight_synthesizer
   ↓ aggregated_stats, action_recommendations, final_report 채움
 END
@@ -84,6 +91,6 @@ END
 
 ## 불변 규칙
 
-1. `revisions >= max_revisions`이면 verdict와 무관하게 `insight_synthesizer`로 강제 전진
+1. `revisions >= max_revisions`이면 REVISE 판정 시 `hitl_triage`를 거쳐 `low_confidence_items`에 저장 후 `insight_synthesizer`로 전진 (사람 검토 대기)
 2. 에이전트는 자신의 담당 필드만 업데이트한다 (다른 필드 덮어쓰기 금지)
 3. `aste_results`의 모든 항목에 `evidence` 필드 필수. 빈 문자열 허용 안 됨

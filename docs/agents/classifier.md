@@ -25,8 +25,8 @@ Critic의 피드백이 있으면 반드시 반영해서 재시도한다.
 **Steps:**
 1. critic_feedback 여부 확인 → 있으면 revision 모드
 2. LLM 프롬프트 호출 → [P-02 (일반)](../design/prompt_spec.md#p-02-sentiment-classifier-프롬프트-일반-모드) / [P-03 (revision)](../design/prompt_spec.md#p-03-sentiment-classifier-프롬프트-revision-모드)
-3. JSON 파싱 → `List[Triple]` 변환
-4. 전체 confidence = mean([t["confidence"] for t in triples])
+3. JSON 파싱 → `List[ASTEResult]` 변환
+4. 전체 confidence = mean([t["confidence"] for t in aste_results])
 5. State 업데이트: aste_results, confidence
 
 **Expectation:**
@@ -34,6 +34,7 @@ Critic의 피드백이 있으면 반드시 반영해서 재시도한다.
 {
   "aste_results": [
     {
+      "review_index": 0,
       "aspect": "요금",
       "opinion": "너무 비싸",
       "sentiment": "NEG",
