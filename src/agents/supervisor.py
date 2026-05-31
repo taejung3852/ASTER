@@ -18,6 +18,7 @@ def supervisor(state: ABSAState) -> ABSAState:
         "critic_feedback": None,
         "graph_context": None,
         "vector_context": None,
+        "low_confidence_items": [],
         "aggregated_stats": {},
         "action_recommendations": "",
         "final_report": "",

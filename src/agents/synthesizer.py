@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langsmith import traceable
 
 from src.state import ABSAState
-from src.utils import llm_text as _llm
+from src.utils import llm_text as _llm, parse_text_response
 
 _SYSTEM = """\
 # Role
@@ -90,7 +90,7 @@ def insight_synthesizer(state: ABSAState) -> dict:
 """
 
     response = _llm.invoke([SystemMessage(_SYSTEM), HumanMessage(human)])
-    action_recommendations = response.content.strip()
+    action_recommendations = parse_text_response(response).strip()
 
     final_report = json.dumps(
         {

@@ -1,11 +1,10 @@
-import json
 from typing import Optional
 
 from langchain_core.messages import SystemMessage, HumanMessage
 from langsmith import traceable
 
 from src.state import ABSAState, ASTEResult
-from src.utils import llm_json as _llm
+from src.utils import llm_json as _llm, parse_json_response
 
 _SYSTEM = """\
 # Role
@@ -27,10 +26,12 @@ _SYSTEM = """\
 
 # Expectations
 출력 형식 (JSON):
-{"aste_results": [{"aspect": "str", "opinion": "str", "sentiment": "POS|NEG|NEU", "confidence": 0.0, "evidence": "원문 인용"}]}
+{"aste_results": [{"review_index": 0, "aspect": "str", "opinion": "str", "sentiment": "POS|NEG|NEU", "confidence": 0.0, "evidence": "원문 인용"}]}
 
-예시:
-{"aste_results": [{"aspect": "요금", "opinion": "너무 비싸", "sentiment": "NEG", "confidence": 0.87, "evidence": "원문: '요금이 너무 비싸서 해지를 고려하고 있어요'"}]}
+- review_index: 해당 triple이 추출된 리뷰의 0-based 인덱스 (리뷰 번호 - 1)
+
+예시 (리뷰가 3개일 때):
+{"aste_results": [{"review_index": 0, "aspect": "요금", "opinion": "너무 비싸", "sentiment": "NEG", "confidence": 0.87, "evidence": "원문: '요금이 너무 비싸서 해지를 고려하고 있어요'"}]}
 
 # Narrowing
 - 리뷰에 없는 내용을 opinion으로 생성하지 마세요 (hallucination 금지)
@@ -46,7 +47,7 @@ def sentiment_classifier(state: ABSAState) -> dict:
     graph_context = state.get("graph_context")
     critic_feedback: Optional[str] = state.get("critic_feedback")
 
-    reviews_str = "\n".join(f"- {r}" for r in reviews)
+    reviews_str = "\n".join(f"[{i}] {r}" for i, r in enumerate(reviews))
     aspects_str = "\n".join(f"- {a['text']} ({a['category']})" for a in aspects)
     feedback_section = (
         f"## Critic 피드백 (반드시 반영)\n{critic_feedback}\n\n위 피드백의 오류를 수정하여 다시 추출하세요.\n\n"
@@ -66,7 +67,7 @@ def sentiment_classifier(state: ABSAState) -> dict:
 """
 
     response = _llm.invoke([SystemMessage(_SYSTEM), HumanMessage(human)])
-    parsed = json.loads(response.content)
+    parsed = parse_json_response(response)
     aste_results: list[ASTEResult] = parsed.get("aste_results", [])
 
     for t in aste_results:
