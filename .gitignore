@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.langsmith/
+data/semeval_2014/*.xml
+data/semeval_2014/*.txt
+devlog/
