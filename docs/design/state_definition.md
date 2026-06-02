@@ -5,7 +5,7 @@
 - 모든 에이전트는 `ABSAState`를 통해서만 데이터를 주고받는다
 - `evidence` 필드: 설명 가능성(explainability) 측정의 핵심. 에이전트가 판단 근거를 반드시 자연어로 기록
 - `critic_feedback`: Reflection 루프에서 Classifier로 역전파되는 피드백. State에 누적 기록
-- `revisions`: 무한 루프 방지. `max_revisions` 초과 시 강제 PASS
+- `revisions`: 무한 루프 방지. `max_revisions` 초과 시 hitl_triage 경유 → low_confidence_items 저장
 
 ## 확정 스키마
 

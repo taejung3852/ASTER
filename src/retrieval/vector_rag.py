@@ -6,7 +6,7 @@ from typing import List, Optional
 import os
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 _client: Optional[QdrantClient] = None
@@ -65,7 +65,9 @@ def search(reviews: List[str], domain: str, top_k: int = 3) -> str:
         collection_name=_COLLECTION,
         query_vector=query_vector,
         limit=top_k,
-        query_filter=None,
+        query_filter=Filter(
+            must=[FieldCondition(key="domain", match=MatchValue(value=domain))]
+        ),
     )
 
     if not results:
