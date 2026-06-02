@@ -8,3 +8,4 @@ venv/
 data/semeval_2014/*.xml
 data/semeval_2014/*.txt
 devlog/
+*.pdf
